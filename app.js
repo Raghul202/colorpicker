@@ -1,4 +1,6 @@
-// ...existing JS from <script> in index.html...
+// Import color grid and RGB converter modules
+import { initColorGrid } from './colorGrid.js';
+import { initRGBConverter } from './rgbConverter.js';
 // --- Color Conversion Utilities ---
 // Helper functions for color conversions
 function hexToRgb(hex) {
@@ -239,7 +241,7 @@ function updateColor(hex) {
 colorInput.addEventListener('input', e => updateColor(e.target.value));
 // Initial render
 updateColor(colorInput.value);
-// Modern Color Wheel Popup
+// --- Modern Color Wheel Popup
 (function(){
   // Create modal HTML
   const modal = document.createElement('div');
@@ -460,3 +462,59 @@ updateColor(colorInput.value);
     return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
   }
 })();
+// --- Helper for color grid/converter sync ---
+function updateRGBInputsFromHex(hex) {
+  // Accepts #RRGGBB or #RGB
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+  const r = parseInt(hex.slice(0,2), 16) || 0;
+  const g = parseInt(hex.slice(2,4), 16) || 0;
+  const b = parseInt(hex.slice(4,6), 16) || 0;
+  const rHex = document.getElementById('rHex');
+  const gHex = document.getElementById('gHex');
+  const bHex = document.getElementById('bHex');
+  const rDec = document.getElementById('rDec');
+  const gDec = document.getElementById('gDec');
+  const bDec = document.getElementById('bDec');
+  if (rHex && gHex && bHex && rDec && gDec && bDec) {
+    rHex.value = r.toString(16).padStart(2,'0').toUpperCase();
+    gHex.value = g.toString(16).padStart(2,'0').toUpperCase();
+    bHex.value = b.toString(16).padStart(2,'0').toUpperCase();
+    rDec.value = r;
+    gDec.value = g;
+    bDec.value = b;
+  }
+}
+function highlightGridSwatch(hex) {
+  // Remove highlight from all
+  document.querySelectorAll('.color-grid-swatch.selected').forEach(el => el.classList.remove('selected'));
+  // Find and highlight the matching swatch
+  hex = hex.replace(/^#/, '').toLowerCase();
+  if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+  const swatches = document.querySelectorAll('.color-grid-swatch');
+  swatches.forEach(swatch => {
+    let swatchHex = swatch.style.background.replace(/^#/, '').toLowerCase();
+    if (swatchHex.length === 3) swatchHex = swatchHex.split('').map(x => x + x).join('');
+    if (swatchHex.replace(/^#/, '') === hex) {
+      swatch.classList.add('selected');
+    }
+  });
+}
+// --- Module Initialization ---
+window.addEventListener('DOMContentLoaded', () => {
+  initColorGrid({
+    colorInput,
+    updateColor,
+    updateRGBInputsFromHex,
+    highlightGridSwatch
+  });
+  initRGBConverter({
+    colorInput,
+    updateColor,
+    updateRGBInputsFromHex,
+    highlightGridSwatch,
+    rgbToHex,
+    hexToRgb,
+    namedColors
+  });
+});

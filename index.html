@@ -12,6 +12,59 @@
       <span class="title">Ultimate Color Picker</span>
       <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
     </div>
+    <div class="rgb-converter-card">
+      <h2 class="rgb-converter-title">RGB Hexadecimal / Decimal Converter</h2>
+      <table class="rgb-converter-table">
+        <thead>
+          <tr>
+            <th>RGB Channel</th>
+            <th>Hexadecimal</th>
+            <th>Decimal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><button class="rgb-btn" id="rMinus">-</button> <span class="rgb-label red">Red</span> <button class="rgb-btn" id="rPlus">+</button></td>
+            <td><input class="rgb-hex" id="rHex" maxlength="2" value="00"></td>
+            <td><input class="rgb-dec" id="rDec" maxlength="3" value="0"></td>
+          </tr>
+          <tr>
+            <td><button class="rgb-btn" id="gMinus">-</button> <span class="rgb-label green">Green</span> <button class="rgb-btn" id="gPlus">+</button></td>
+            <td><input class="rgb-hex" id="gHex" maxlength="2" value="00"></td>
+            <td><input class="rgb-dec" id="gDec" maxlength="3" value="0"></td>
+          </tr>
+          <tr>
+            <td><button class="rgb-btn" id="bMinus">-</button> <span class="rgb-label blue">Blue</span> <button class="rgb-btn" id="bPlus">+</button></td>
+            <td><input class="rgb-hex" id="bHex" maxlength="2" value="00"></td>
+            <td><input class="rgb-dec" id="bDec" maxlength="3" value="0"></td>
+          </tr>
+          <tr>
+            <td><button class="rgb-btn" id="allMinus">-</button> <span class="rgb-label">All</span> <button class="rgb-btn" id="allPlus">+</button></td>
+            <td><button class="rgb-display-btn" id="hexDisplay">Display</button></td>
+            <td><button class="rgb-display-btn" id="decDisplay">Display</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="rgb-instructions">Enter a hexadecimal (00 - FF) number in each of the hexadecimal boxes, or a decimal (0 - 255) number in each of the decimal boxes, and click the respective Convert button to convert the values and display the color on the backdrop.</div>
+      <div class="rgb-row">
+        <label class="rgb-row-label">Hex String:</label>
+        <span>#</span><input class="rgb-hex-string" id="hexString" maxlength="6" value="000000">
+        <button class="rgb-display-btn" id="hexStringDisplay">Display</button>
+      </div>
+      <div class="rgb-row">
+        <label class="rgb-row-label">Named Color:</label>
+        <select id="namedColorSelect"></select>
+      </div>
+      <div class="rgb-instructions">Enter a hexadecimal string (000000 - FFFFFF) in the box to display its color and decimal values. Alternatively, click a color on the grid below to start:</div>
+      <div class="rgb-live-preview-row">
+        <div class="rgb-live-swatch" id="rgbLiveSwatch"></div>
+        <div class="rgb-live-values" id="rgbLiveValues">
+          <div class="rgb-live-row"><span class="rgb-live-label">RGB</span><span id="rgbLiveRgb">rgb(0, 0, 0)</span></div>
+          <div class="rgb-live-row"><span class="rgb-live-label">HEX</span><span id="rgbLiveHex">#000000</span></div>
+          <div class="rgb-live-row"><span class="rgb-live-label">Decimal</span><span id="rgbLiveDec">0</span></div>
+        </div>
+      </div>
+    </div>
     <div class="color-input-row">
       <div class="color-input">
         <label for="colorInput">Pick a color</label>
@@ -19,8 +72,11 @@
       </div>
       <div class="color-preview" id="colorPreview"></div>
     </div>
+    <div class="color-grid-palette" id="colorGridPalette" aria-label="Color grid palette"></div>
     <div class="formats" id="formats"></div>
   </div>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
+  <script type="module" src="colorGrid.js"></script>
+  <script type="module" src="rgbConverter.js"></script>
 </body>
 </html>
