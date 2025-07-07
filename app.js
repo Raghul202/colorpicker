@@ -152,6 +152,8 @@ const colorInput = document.getElementById('colorInput');
 const colorPreview = document.getElementById('colorPreview');
 const formatsDiv = document.getElementById('formats');
 const themeToggle = document.getElementById('themeToggle');
+// --- Global alpha state ---
+let globalAlpha = 1; // Default alpha is 1 (opaque)
 // Theme toggle
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -177,7 +179,12 @@ function animatePicker() {
 }
 function updateColor(hex) {
   const rgb = hexToRgb(hex);
-  colorPreview.style.background = hex;
+  // Use globalAlpha for preview and formats
+  if (globalAlpha < 1) {
+    colorPreview.style.background = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${globalAlpha})`;
+  } else {
+    colorPreview.style.background = hex;
+  }
   animatePreview();
   animatePicker();
   // All formats
@@ -187,9 +194,9 @@ function updateColor(hex) {
   const formats = [
     { name: 'HEX', code: rgbToHex(rgb) },
     { name: 'RGB', code: `rgb(${rgb.join(', ')})` },
-    { name: 'RGBA', code: rgbToRgba(rgb, 1) },
+    { name: 'RGBA', code: rgbToRgba(rgb, globalAlpha) },
     { name: 'HSL', code: `hsl(${rgbToHsl(rgb).join(', ')}%)` },
-    { name: 'HSLA', code: rgbToHsla(rgb, 1) },
+    { name: 'HSLA', code: rgbToHsla(rgb, globalAlpha) },
     { name: 'CMYK', code: rgbToCmyk(rgb).join(', ') },
     { name: 'Named Color', code: rgbToNamed(rgb) },
     { name: 'Decimal RGB', code: rgbToDecimal(rgb) },
@@ -239,9 +246,25 @@ updateColor(colorInput.value);
   modal.id = 'colorWheelModal';
   modal.style = 'display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2px);align-items:center;justify-content:center;';
   modal.innerHTML = `
-    <div style="background:var(--card,#fff);border-radius:1.3rem;box-shadow:0 8px 32px 0 rgba(31,38,135,0.18);padding:2rem 1.5rem;min-width:320px;display:flex;flex-direction:column;align-items:center;gap:1.2rem;position:relative;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);">
-      <canvas id="colorWheelCanvas" width="240" height="240" style="border-radius:50%;box-shadow:0 2px 8px 0 rgba(0,0,0,0.10);cursor:crosshair;"></canvas>
-      <input type="range" id="wheelLightness" min="0" max="100" value="50" style="width:180px;">
+    <div style="background:var(--card,#fff);border-radius:1.3rem;box-shadow:0 8px 32px 0 rgba(31,38,135,0.18);padding:2rem 1.5rem;min-width:340px;display:flex;flex-direction:column;align-items:center;gap:1.2rem;position:relative;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);">
+      <div style="display:flex;flex-direction:row;gap:1.5rem;align-items:flex-start;">
+        <canvas id="colorWheelCanvas" width="200" height="200" style="border-radius:50%;box-shadow:0 2px 8px 0 rgba(0,0,0,0.10);cursor:crosshair;"></canvas>
+        <div style="display:flex;flex-direction:column;gap:0.7rem;align-items:center;">
+          <label style="font-size:1rem;font-weight:600;">Lightness</label>
+          <input type="range" id="wheelLightness" min="0" max="100" value="50" style="width:110px;">
+          <label style="font-size:1rem;font-weight:600;">Alpha</label>
+          <input type="range" id="wheelAlpha" min="0" max="100" value="100" style="width:110px;">
+          <label style="font-size:1rem;font-weight:600;">Format</label>
+          <select id="wheelFormat" style="padding:0.3rem 0.7rem;border-radius:0.5rem;font-size:1rem;">
+            <option value="hex">HEX</option>
+            <option value="rgb">RGB</option>
+            <option value="rgba">RGBA</option>
+            <option value="hsl">HSL</option>
+            <option value="hsla">HSLA</option>
+          </select>
+          <div id="wheelPreview" style="width:38px;height:38px;border-radius:0.7rem;border:2px solid #4f8cff;margin-top:0.5rem;"></div>
+        </div>
+      </div>
       <div style="display:flex;gap:1.2rem;align-items:center;">
         <button id="wheelOk" style="background:#4f8cff;color:#fff;border:none;border-radius:1.2rem;padding:0.7rem 1.3rem;font-size:1.1rem;font-weight:600;cursor:pointer;">OK</button>
         <button id="wheelCancel" style="background:#fff3;color:#4f8cff;border:1.5px solid #4f8cff;border-radius:1.2rem;padding:0.6rem 1.1rem;font-size:1.1rem;font-weight:600;cursor:pointer;">Cancel</button>
@@ -253,35 +276,97 @@ updateColor(colorInput.value);
   // Add open button
   const openBtn = document.createElement('button');
   openBtn.textContent = '🎨 Color Wheel';
-  openBtn.className = 'custom-picker-btn';
+  openBtn.className = 'custom-picker-btn color-wheel-btn-animated';
   openBtn.style.marginTop = '0.5rem';
+  openBtn.style.background = 'linear-gradient(90deg, #4f8cff 0%, #6f6fff 100%)';
+  openBtn.style.boxShadow = '0 4px 16px 0 rgba(79,140,255,0.18), 0 1.5px 0 0 #fff6 inset';
+  openBtn.style.border = 'none';
+  openBtn.style.color = '#fff';
+  openBtn.style.fontWeight = '700';
+  openBtn.style.letterSpacing = '0.03em';
+  openBtn.style.fontSize = '1.13rem';
+  openBtn.style.borderRadius = '1.3rem';
+  openBtn.style.padding = '0.7rem 1.7rem';
+  openBtn.style.transition = 'background 0.22s, transform 0.18s, box-shadow 0.18s';
+  openBtn.style.position = 'relative';
+  openBtn.style.overflow = 'hidden';
+  openBtn.onmouseenter = function() {
+    openBtn.style.transform = 'scale(1.07)';
+    openBtn.style.boxShadow = '0 8px 32px 0 rgba(79,140,255,0.22), 0 1.5px 0 0 #fff6 inset';
+  };
+  openBtn.onmouseleave = function() {
+    openBtn.style.transform = 'scale(1)';
+    openBtn.style.boxShadow = '0 4px 16px 0 rgba(79,140,255,0.18), 0 1.5px 0 0 #fff6 inset';
+  };
+  openBtn.onmousedown = function() {
+    openBtn.style.transform = 'scale(0.96)';
+    openBtn.style.background = 'linear-gradient(90deg, #6f6fff 0%, #4f8cff 100%)';
+  };
+  openBtn.onmouseup = function() {
+    openBtn.style.transform = 'scale(1.07)';
+    openBtn.style.background = 'linear-gradient(90deg, #4f8cff 0%, #6f6fff 100%)';
+  };
+  // DnD style: add a subtle drag handle
+  const dragHandle = document.createElement('span');
+  dragHandle.style.display = 'inline-block';
+  dragHandle.style.width = '18px';
+  dragHandle.style.height = '18px';
+  dragHandle.style.marginRight = '0.7rem';
+  dragHandle.style.verticalAlign = 'middle';
+  dragHandle.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><circle cx="4" cy="5" r="1.5" fill="#fff8"/><circle cx="4" cy="9" r="1.5" fill="#fff8"/><circle cx="4" cy="13" r="1.5" fill="#fff8"/><circle cx="9" cy="5" r="1.5" fill="#fff8"/><circle cx="9" cy="9" r="1.5" fill="#fff8"/><circle cx="9" cy="13" r="1.5" fill="#fff8"/><circle cx="14" cy="5" r="1.5" fill="#fff8"/><circle cx="14" cy="9" r="1.5" fill="#fff8"/><circle cx="14" cy="13" r="1.5" fill="#fff8"/></svg>';
+  openBtn.prepend(dragHandle);
+  // Insert after color input
   const colorInputDiv = document.querySelector('.color-input');
   colorInputDiv.appendChild(openBtn);
 
   // Color wheel logic
   const colorWheelCanvas = document.getElementById('colorWheelCanvas');
   const wheelLightness = document.getElementById('wheelLightness');
+  const wheelAlpha = document.getElementById('wheelAlpha');
+  const wheelFormat = document.getElementById('wheelFormat');
+  const wheelPreview = document.getElementById('wheelPreview');
   const wheelOk = document.getElementById('wheelOk');
   const wheelCancel = document.getElementById('wheelCancel');
-  let wheelSelected = {h:220,s:1,l:0.5};
+  let wheelSelected = {h:220,s:1,l:0.5,a:1};
 
   openBtn.onclick = function() {
     modal.style.display = 'flex';
     drawColorWheel();
+    updateWheelPreview();
+    updateModalBg();
   };
   wheelCancel.onclick = function() {
     modal.style.display = 'none';
   };
   wheelOk.onclick = function() {
     const rgb = hslToRgb([wheelSelected.h, wheelSelected.s, wheelSelected.l]);
-    const hex = rgbToHex(rgb);
-    document.getElementById('colorInput').value = hex;
+    let val;
+    if(wheelFormat.value==='hex') val = rgbToHex(rgb);
+    else if(wheelFormat.value==='rgb') val = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+    else if(wheelFormat.value==='rgba') val = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${wheelSelected.a.toFixed(2)})`;
+    else if(wheelFormat.value==='hsl') val = `hsl(${Math.round(wheelSelected.h)},${Math.round(wheelSelected.s*100)}%,${Math.round(wheelSelected.l*100)}%)`;
+    else if(wheelFormat.value==='hsla') val = `hsla(${Math.round(wheelSelected.h)},${Math.round(wheelSelected.s*100)}%,${Math.round(wheelSelected.l*100)}%,${wheelSelected.a.toFixed(2)})`;
+    document.getElementById('colorInput').value = rgbToHex(rgb);
+    globalAlpha = wheelSelected.a; // <-- Set global alpha from wheel
     document.getElementById('colorInput').dispatchEvent(new Event('input', {bubbles:true}));
     modal.style.display = 'none';
+    // Optionally: copy val to clipboard
+    navigator.clipboard.writeText(val);
   };
   wheelLightness.oninput = function() {
     wheelSelected.l = this.value/100;
     drawColorWheel();
+    updateWheelPreview();
+    updateModalBg();
+  };
+  wheelAlpha.oninput = function() {
+    wheelSelected.a = this.value/100;
+    updateWheelPreview();
+    updateModalBg();
+  };
+  wheelFormat.oninput = function() {
+    updateWheelPreview();
+    updateModalBg();
   };
   colorWheelCanvas.onmousedown = function(e) {
     function pick(ev) {
@@ -296,11 +381,19 @@ updateColor(colorInput.value);
       wheelSelected.h = h;
       wheelSelected.s = s;
       drawColorWheel();
+      updateWheelPreview();
+      updateModalBg();
     }
     pick(e);
     window.onmousemove = pick;
     window.onmouseup = ()=>window.onmousemove=window.onmouseup=null;
   };
+  function updateModalBg() {
+    const rgb = hslToRgb([wheelSelected.h, wheelSelected.s, wheelSelected.l]);
+    const a = wheelSelected.a;
+    modal.firstElementChild.style.background = `linear-gradient(120deg, rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a}) 80%, var(--card) 100%)`;
+    modal.firstElementChild.style.transition = 'background 0.18s';
+  }
   function drawColorWheel() {
     const ctx = colorWheelCanvas.getContext('2d');
     const w = colorWheelCanvas.width, h = colorWheelCanvas.height;
@@ -331,6 +424,17 @@ updateColor(colorInput.value);
     ctx.beginPath();
     ctx.arc(px,py,13,0,2*Math.PI);
     ctx.stroke();
+  }
+  function updateWheelPreview() {
+    const rgb = hslToRgb([wheelSelected.h, wheelSelected.s, wheelSelected.l]);
+    let val;
+    if(wheelFormat.value==='hex') val = rgbToHex(rgb);
+    else if(wheelFormat.value==='rgb') val = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+    else if(wheelFormat.value==='rgba') val = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${wheelSelected.a.toFixed(2)})`;
+    else if(wheelFormat.value==='hsl') val = `hsl(${Math.round(wheelSelected.h)},${Math.round(wheelSelected.s*100)}%,${Math.round(wheelSelected.l*100)}%)`;
+    else if(wheelFormat.value==='hsla') val = `hsla(${Math.round(wheelSelected.h)},${Math.round(wheelSelected.s*100)}%,${Math.round(wheelSelected.l*100)}%,${wheelSelected.a.toFixed(2)})`;
+    wheelPreview.style.background = (wheelFormat.value==='rgba'||wheelFormat.value==='hsla') ? `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${wheelSelected.a})` : rgbToHex(rgb);
+    wheelPreview.title = val;
   }
   // HSL to RGB helper
   function hslToRgb([h,s,l]) {
