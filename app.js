@@ -232,3 +232,127 @@ function updateColor(hex) {
 colorInput.addEventListener('input', e => updateColor(e.target.value));
 // Initial render
 updateColor(colorInput.value);
+// Modern Color Wheel Popup
+(function(){
+  // Create modal HTML
+  const modal = document.createElement('div');
+  modal.id = 'colorWheelModal';
+  modal.style = 'display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2px);align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--card,#fff);border-radius:1.3rem;box-shadow:0 8px 32px 0 rgba(31,38,135,0.18);padding:2rem 1.5rem;min-width:320px;display:flex;flex-direction:column;align-items:center;gap:1.2rem;position:relative;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);">
+      <canvas id="colorWheelCanvas" width="240" height="240" style="border-radius:50%;box-shadow:0 2px 8px 0 rgba(0,0,0,0.10);cursor:crosshair;"></canvas>
+      <input type="range" id="wheelLightness" min="0" max="100" value="50" style="width:180px;">
+      <div style="display:flex;gap:1.2rem;align-items:center;">
+        <button id="wheelOk" style="background:#4f8cff;color:#fff;border:none;border-radius:1.2rem;padding:0.7rem 1.3rem;font-size:1.1rem;font-weight:600;cursor:pointer;">OK</button>
+        <button id="wheelCancel" style="background:#fff3;color:#4f8cff;border:1.5px solid #4f8cff;border-radius:1.2rem;padding:0.6rem 1.1rem;font-size:1.1rem;font-weight:600;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Add open button
+  const openBtn = document.createElement('button');
+  openBtn.textContent = '🎨 Color Wheel';
+  openBtn.className = 'custom-picker-btn';
+  openBtn.style.marginTop = '0.5rem';
+  const colorInputDiv = document.querySelector('.color-input');
+  colorInputDiv.appendChild(openBtn);
+
+  // Color wheel logic
+  const colorWheelCanvas = document.getElementById('colorWheelCanvas');
+  const wheelLightness = document.getElementById('wheelLightness');
+  const wheelOk = document.getElementById('wheelOk');
+  const wheelCancel = document.getElementById('wheelCancel');
+  let wheelSelected = {h:220,s:1,l:0.5};
+
+  openBtn.onclick = function() {
+    modal.style.display = 'flex';
+    drawColorWheel();
+  };
+  wheelCancel.onclick = function() {
+    modal.style.display = 'none';
+  };
+  wheelOk.onclick = function() {
+    const rgb = hslToRgb([wheelSelected.h, wheelSelected.s, wheelSelected.l]);
+    const hex = rgbToHex(rgb);
+    document.getElementById('colorInput').value = hex;
+    document.getElementById('colorInput').dispatchEvent(new Event('input', {bubbles:true}));
+    modal.style.display = 'none';
+  };
+  wheelLightness.oninput = function() {
+    wheelSelected.l = this.value/100;
+    drawColorWheel();
+  };
+  colorWheelCanvas.onmousedown = function(e) {
+    function pick(ev) {
+      const rect = colorWheelCanvas.getBoundingClientRect();
+      let x = ev.clientX - rect.left - colorWheelCanvas.width/2;
+      let y = ev.clientY - rect.top - colorWheelCanvas.height/2;
+      const r = Math.sqrt(x*x + y*y);
+      if (r > colorWheelCanvas.width/2) return;
+      let h = Math.atan2(y, x) * 180 / Math.PI;
+      if (h < 0) h += 360;
+      let s = r/(colorWheelCanvas.width/2);
+      wheelSelected.h = h;
+      wheelSelected.s = s;
+      drawColorWheel();
+    }
+    pick(e);
+    window.onmousemove = pick;
+    window.onmouseup = ()=>window.onmousemove=window.onmouseup=null;
+  };
+  function drawColorWheel() {
+    const ctx = colorWheelCanvas.getContext('2d');
+    const w = colorWheelCanvas.width, h = colorWheelCanvas.height;
+    const l = wheelSelected.l;
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        let dx = x-w/2, dy = y-h/2;
+        let r = Math.sqrt(dx*dx+dy*dy);
+        if(r>w/2) {ctx.clearRect(x,y,1,1);continue;}
+        let angle = Math.atan2(dy,dx)*180/Math.PI;
+        if(angle<0) angle+=360;
+        let s = r/(w/2);
+        let rgb = hslToRgb([angle,s,l]);
+        ctx.fillStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+        ctx.fillRect(x,y,1,1);
+      }
+    }
+    // Draw picker circle
+    const px = Math.round(wheelSelected.s*(w/2)*Math.cos(wheelSelected.h*Math.PI/180)+w/2);
+    const py = Math.round(wheelSelected.s*(h/2)*Math.sin(wheelSelected.h*Math.PI/180)+h/2);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(px,py,10,0,2*Math.PI);
+    ctx.stroke();
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(px,py,13,0,2*Math.PI);
+    ctx.stroke();
+  }
+  // HSL to RGB helper
+  function hslToRgb([h,s,l]) {
+    h = h/360;
+    let r, g, b;
+    if(s===0){r=g=b=l*255;return [r,g,b].map(Math.round);}
+    const hue2rgb = (p,q,t)=>{
+      if(t<0)t+=1;if(t>1)t-=1;
+      if(t<1/6)return p+(q-p)*6*t;
+      if(t<1/2)return q;
+      if(t<2/3)return p+(q-p)*(2/3-t)*6;
+      return p;
+    };
+    const q = l<0.5?l*(1+s):l+s-l*s;
+    const p = 2*l-q;
+    r = hue2rgb(p,q,h+1/3);
+    g = hue2rgb(p,q,h);
+    b = hue2rgb(p,q,h-1/3);
+    return [r*255,g*255,b*255].map(Math.round);
+  }
+  // RGB to HEX helper
+  function rgbToHex([r,g,b]) {
+    return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+})();
