@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultimate Color Picker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="title">Ultimate Color Picker</span>
+      <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+    </div>
+    <div class="color-input-row">
+      <div class="color-input">
+        <label for="colorInput">Pick a color</label>
+        <input type="color" id="colorInput" value="#4f8cff">
+      </div>
+      <div class="color-preview" id="colorPreview"></div>
+    </div>
+    <div class="formats" id="formats"></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
