@@ -246,28 +246,28 @@ updateColor(colorInput.value);
   modal.id = 'colorWheelModal';
   modal.style = 'display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(2px);align-items:center;justify-content:center;';
   modal.innerHTML = `
-    <div style="background:var(--card,#fff);border-radius:1.3rem;box-shadow:0 8px 32px 0 rgba(31,38,135,0.18);padding:2rem 1.5rem;min-width:340px;display:flex;flex-direction:column;align-items:center;gap:1.2rem;position:relative;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);">
-      <div style="display:flex;flex-direction:row;gap:1.5rem;align-items:flex-start;">
-        <canvas id="colorWheelCanvas" width="200" height="200" style="border-radius:50%;box-shadow:0 2px 8px 0 rgba(0,0,0,0.10);cursor:crosshair;"></canvas>
-        <div style="display:flex;flex-direction:column;gap:0.7rem;align-items:center;">
-          <label style="font-size:1rem;font-weight:600;">Lightness</label>
-          <input type="range" id="wheelLightness" min="0" max="100" value="50" style="width:110px;">
-          <label style="font-size:1rem;font-weight:600;">Alpha</label>
-          <input type="range" id="wheelAlpha" min="0" max="100" value="100" style="width:110px;">
-          <label style="font-size:1rem;font-weight:600;">Format</label>
-          <select id="wheelFormat" style="padding:0.3rem 0.7rem;border-radius:0.5rem;font-size:1rem;">
+    <div style="background:var(--card,#fff);border-radius:1.7rem;box-shadow:0 12px 48px 0 rgba(31,38,135,0.22);padding:2.5rem 2rem;min-width:370px;display:flex;flex-direction:column;align-items:center;gap:1.6rem;position:relative;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transition:background 0.18s;">
+      <div style="display:flex;flex-direction:row;gap:2.2rem;align-items:flex-start;">
+        <canvas id="colorWheelCanvas" width="220" height="220" style="border-radius:50%;box-shadow:0 4px 18px 0 rgba(0,0,0,0.13);cursor:crosshair;transition:box-shadow 0.18s, border 0.18s, transform 0.18s;"></canvas>
+        <div style="display:flex;flex-direction:column;gap:1.1rem;align-items:center;min-width:120px;">
+          <label style="font-size:1.08rem;font-weight:700;letter-spacing:0.01em;">Lightness</label>
+          <input type="range" id="wheelLightness" min="0" max="100" value="50" style="width:120px;accent-color:#4f8cff;">
+          <label style="font-size:1.08rem;font-weight:700;letter-spacing:0.01em;">Alpha</label>
+          <input type="range" id="wheelAlpha" min="0" max="100" value="100" style="width:120px;accent-color:#ffb347;">
+          <label style="font-size:1.08rem;font-weight:700;letter-spacing:0.01em;">Format</label>
+          <select id="wheelFormat" style="padding:0.4rem 0.8rem;border-radius:0.7rem;font-size:1.08rem;font-weight:600;background:#f7f8fa;border:1.5px solid #e3eaff;box-shadow:0 1px 4px 0 rgba(79,140,255,0.09);">
             <option value="hex">HEX</option>
             <option value="rgb">RGB</option>
             <option value="rgba">RGBA</option>
             <option value="hsl">HSL</option>
             <option value="hsla">HSLA</option>
           </select>
-          <div id="wheelPreview" style="width:38px;height:38px;border-radius:0.7rem;border:2px solid #4f8cff;margin-top:0.5rem;"></div>
+          <div id="wheelPreview" style="width:48px;height:48px;border-radius:1rem;border:2.5px solid #4f8cff;margin-top:0.7rem;box-shadow:0 2px 8px 0 rgba(79,140,255,0.13);"></div>
         </div>
       </div>
-      <div style="display:flex;gap:1.2rem;align-items:center;">
-        <button id="wheelOk" style="background:#4f8cff;color:#fff;border:none;border-radius:1.2rem;padding:0.7rem 1.3rem;font-size:1.1rem;font-weight:600;cursor:pointer;">OK</button>
-        <button id="wheelCancel" style="background:#fff3;color:#4f8cff;border:1.5px solid #4f8cff;border-radius:1.2rem;padding:0.6rem 1.1rem;font-size:1.1rem;font-weight:600;cursor:pointer;">Cancel</button>
+      <div style="display:flex;gap:1.7rem;align-items:center;">
+        <button id="wheelOk" style="background:linear-gradient(90deg,#4f8cff 0%,#6f6fff 100%);color:#fff;border:none;border-radius:1.5rem;padding:0.9rem 1.7rem;font-size:1.18rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px 0 rgba(79,140,255,0.13);transition:background 0.18s,transform 0.13s;">OK</button>
+        <button id="wheelCancel" style="background:#fff3;color:#4f8cff;border:2px solid #4f8cff;border-radius:1.5rem;padding:0.8rem 1.4rem;font-size:1.13rem;font-weight:700;cursor:pointer;transition:background 0.18s,transform 0.13s;">Cancel</button>
       </div>
     </div>
   `;
